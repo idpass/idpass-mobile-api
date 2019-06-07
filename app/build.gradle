@@ -1,0 +1,217 @@
+/*
+ * Copyright 2019 Newlogic Impact Lab Pte. Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+plugins {
+    id 'com.android.library'
+    id 'kotlin-android'
+    id 'kotlin-android-extensions'
+    id 'kotlin-kapt'
+//    id 'signing'
+    id 'maven'
+    id 'maven-publish'
+    id 'com.jfrog.bintray'
+    id 'com.google.protobuf'
+}
+
+ext {
+    artifactId = "idpass-mobile-api"
+    groupId = "org.idpass.mobile.api"
+    version = '0.0.1'
+    description = ""
+}
+
+group project.ext.groupId
+version = project.ext.version
+
+android {
+    compileSdkVersion 28
+    buildToolsVersion "28.0.3"
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 28
+        versionCode 15
+        versionName project.ext.version
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+tasks.withType(Javadoc).all { enabled = false }
+
+tasks.withType(Test) {
+    testLogging {
+        exceptionFormat "full"
+        events "started", "skipped", "passed", "failed"
+        showStandardStreams true
+    }
+}
+
+
+dependencies {
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test:rules:1.0.2'
+    testImplementation 'junit:junit:4.12'
+
+    implementation 'com.google.protobuf:protobuf-lite:3.0.1'
+
+}
+//
+//// Tasks
+//signing {
+//    // This will use the GPG Agent
+//    // to sign the jar
+//    useGpgCmd()
+//    sign configurations.archives
+//}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from android.sourceSets.main.java.srcDirs
+}
+
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+
+protobuf {
+    protoc {
+        artifact = 'com.google.protobuf:protoc:3.4.0'
+    }
+    plugins {
+        grpc {
+            artifact = 'io.grpc:protoc-gen-grpc-java:1.0.0-pre2'
+        }
+        javalite {
+            artifact = 'com.google.protobuf:protoc-gen-javalite:3.0.0'
+        }
+    }
+    generateProtoTasks {
+        all()*.plugins {
+            javalite { }
+        }
+        ofNonTest()*.plugins {
+            grpc {
+                // Options added to --grpc_out
+                option 'lite'
+            }
+        }
+    }
+}
+//
+//task signPom(type: Sign) {
+//    sign project.file("$buildDir/publications/mavenJava/pom-default.xml")
+//
+//    // The signing plugin does not seem to notice
+//    // it when the publications folder with the
+//    // signature has been deleted. So we always
+//    // create a new signature
+//    outputs.upToDateWhen { false }
+//}
+
+artifacts {
+    archives sourcesJar, javadocJar
+}
+
+project.afterEvaluate {
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                groupId project.ext.groupId
+                artifactId project.ext.artifactId
+                version project.ext.version
+
+                artifact bundleReleaseAar
+                artifact sourcesJar
+                artifact javadocJar
+
+
+                pom.withXml {
+                    def root = asNode()
+                    root.appendNode('description', project.ext.description)
+                    root.appendNode('name', project.ext.artifactId)
+                    root.appendNode('url', 'https://github.com/idpass/idpass-mobile-api')
+
+                    def scm = root.appendNode('scm')
+                    scm.appendNode("connection", "scm:git:git://github.com/idpass/idpass-mobile-api.git")
+                    scm.appendNode("developerConnection", "scm:git:ssh://github.com/idpass/idpass-mobile-api")
+                    scm.appendNode("url", "http://github.com/idpass/idpass-mobile-api")
+
+                    def license = root.appendNode('licenses').appendNode('license')
+                    license.appendNode('name', 'APACHE LICENSE, VERSION 2.0')
+                    license.appendNode('url', 'https://www.apache.org/licenses/LICENSE-2.0.html')
+                    license.appendNode('distribution', 'repo')
+
+                    def developer = root.appendNode('developers').appendNode('developer')
+                    developer.appendNode('name', 'Newlogic Impact Lab')
+                    developer.appendNode('email', 'jeremi@newlogic.io')
+
+                    def dependenciesNode = root.appendNode('dependencies')
+                    configurations.implementation.allDependencies.each {
+                        if (it.group != null && (it.name != null || "unspecified".equals(it.name)) && it.version != null) {
+                            def dependencyNode = dependenciesNode.appendNode('dependency')
+                            dependencyNode.appendNode('groupId', it.group)
+                            dependencyNode.appendNode('artifactId', it.name)
+                            dependencyNode.appendNode('version', it.version)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+bintray {
+    user = findProperty("bintray.user")
+    key = findProperty("bintray.apiKey")
+    publications = ['mavenJava']
+    publish = true
+    configurations = ['archives']
+    pkg {
+        repo = 'idpass-maven'
+        name = project.ext.artifactId
+        userOrg = 'idpass'
+        desc = project.ext.description
+        licenses = ['APACHE-2.0']
+        issueTrackerUrl = "https://github.com/idpass/idpass-mobile-api/issues"
+        vcsUrl = 'https://github.com/idpass/idpass-mobile-api.git'
+
+        version {
+            name = project.ext.version
+            released = new java.util.Date()
+            vcsTag = project.ext.version
+        }
+    }
+}
+
+//
+//model {
+//    tasks.publishMavenJavaPublicationToMavenLocal {
+//        dependsOn project.tasks.withType(Sign)
+//    }
+//}
