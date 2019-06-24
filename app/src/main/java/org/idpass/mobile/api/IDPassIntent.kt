@@ -17,6 +17,8 @@
 package org.idpass.mobile.api
 
 import android.content.Intent
+import android.nfc.NfcAdapter
+import android.nfc.Tag
 import android.util.Base64
 import org.idpass.mobile.proto.SignedAction
 
@@ -24,7 +26,8 @@ class IDPassIntent {
 
     companion object {
         @JvmStatic
-        fun intentInitialiseAgent(documentType: String = IDPassConstants.IDPASS_TYPE_QR_CODE, logAction: Boolean = false): Intent {
+        fun intentInitialiseAgent(documentType: String = IDPassConstants.IDPASS_TYPE_QR_CODE,
+                                  logAction: Boolean = false): Intent {
             val intent = Intent(IDPassConstants.IDPASS_IDENTIFY_INTENT)
             intent.putExtra(IDPassConstants.IDPASS_IDPASS_TYPE_EXTRA, documentType)
             intent.putExtra(IDPassConstants.IDPASS_SET_AGENT_EXTRA, true)
@@ -33,17 +36,25 @@ class IDPassIntent {
         }
 
         @JvmStatic
-        fun intentIdentify(documentType: String = IDPassConstants.IDPASS_TYPE_QR_CODE, includeLocation: Boolean = false, logAction: Boolean = false): Intent {
+        fun intentIdentify(documentType: String = IDPassConstants.IDPASS_TYPE_QR_CODE,
+                           includeLocation: Boolean = false,
+                           logAction: Boolean = false,
+                           tag: Tag? = null): Intent {
             val intent = Intent(IDPassConstants.IDPASS_IDENTIFY_INTENT)
             intent.putExtra(IDPassConstants.IDPASS_IDPASS_TYPE_EXTRA, documentType)
             intent.putExtra(IDPassConstants.IDPASS_INCLUDE_LOCATION_EXTRA, includeLocation)
             intent.putExtra(IDPassConstants.IDPASS_SET_AGENT_EXTRA, false)
             intent.putExtra(IDPassConstants.IDPASS_LOG_SIGNED_ACTION_RESULT_EXTRA, logAction)
+            intent.putExtra(NfcAdapter.EXTRA_TAG, tag)
             return intent
         }
 
         @JvmStatic
-        fun intentEnroll(finger: String, name: String, backup: Boolean = true, write_to_mifare: Boolean = false, logAction: Boolean = false): Intent {
+        fun intentEnroll(finger: String,
+                         name: String,
+                         backup: Boolean = true,
+                         write_to_mifare: Boolean = false,
+                         logAction: Boolean = false): Intent {
             val intent = Intent(IDPassConstants.IDPASS_ENROLL_INTENT)
             intent.putExtra(IDPassConstants.IDPASS_FINGER_EXTRA, finger)
             intent.putExtra(IDPassConstants.IDPASS_NAME_EXTRA, name)
