@@ -22,6 +22,7 @@ message IDPassCard {
   bytes fingerprint = 2;
   bytes privateKey = 3;
   string name = 4;
+  string pin = 7;
   bytes creatorPublicKey = 5;
   int64 createdAt = 6; // Timestamp in seconds
 }
@@ -36,6 +37,7 @@ message Person {
   string did = 1;
   string name = 2;
   bool bioVerified = 3;
+  bool pinVerified = 4;
 }
 
 message Action {
@@ -45,22 +47,19 @@ message Action {
     SET_AGENT = 2;
   }
   Person person = 1;
-  string agentDid = 2;
+//  string agentDid = 2;
   LatLng location = 3;
-  Timestamp timestamp = 4;
+//  Timestamp timestamp = 4;
   ActionType actionType = 5;
+  int64 createdAt = 6; // Timestamp in seconds
 }
 
 message SignedAction {
   Action action = 1;
   bytes signature = 2;
   bytes signerPublicKey = 3;
-}
-
-message SignedEnroll {
-  Person person = 1;
-  bytes signature = 2;
-  bytes signerPublicKey = 3;
+  bytes deviceSignature = 4;
+  bytes devicePublicKey = 5;
 }
 
 //-----------------------------------------------------
