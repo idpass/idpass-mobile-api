@@ -31,6 +31,7 @@ class IDPassIntent {
             val intent = Intent(IDPassConstants.IDPASS_IDENTIFY_INTENT)
             intent.putExtra(IDPassConstants.IDPASS_IDPASS_TYPE_EXTRA, documentType)
             intent.putExtra(IDPassConstants.IDPASS_SET_AGENT_EXTRA, true)
+            intent.putExtra(IDPassConstants.IDPASS_CAN_SKIP_BIO_EXTRA, -1)
             intent.putExtra(IDPassConstants.IDPASS_LOG_SIGNED_ACTION_RESULT_EXTRA, logAction)
             return intent
         }

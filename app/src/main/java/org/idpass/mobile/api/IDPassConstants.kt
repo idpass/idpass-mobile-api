@@ -42,4 +42,5 @@ object IDPassConstants {
     const val IDPASS_CARD_BACKUP_EXTRA = "org.idpass.mobile.extra.CARD_BACKUP"
     const val IDPASS_IDPASS_TYPE_EXTRA = "org.idpass.mobile.extra.IDPASS_TYPE"
     const val IDPASS_SET_AGENT_EXTRA = "org.idpass.mobile.extra.SET_AGENT"
+    const val IDPASS_CAN_SKIP_BIO_EXTRA = "org.idpass.mobile.extra.CAN_SKIP_BIO"
 }
