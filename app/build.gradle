@@ -68,7 +68,7 @@ tasks.withType(Test) {
 dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test:rules:1.0.2'
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13.1'
 
     implementation 'com.google.protobuf:protobuf-lite:3.0.1'
 
